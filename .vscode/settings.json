@@ -1,0 +1,17 @@
+{
+     "editor.defaultFormatter": "ms-python.python",
+     "[python]": {
+          "editor.defaultFormatter": "ms-python.autopep8"
+     },
+     "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportPrivateImportUsage": "none"
+     },
+     "python.analysis.extraPaths": [
+        "alpaca/common",
+        "alpaca/student",
+        "alpaca/helper"
+     ],
+     "editor.tabSize": 2,
+
+}
