@@ -1,9 +1,7 @@
-from typing import Literal, TypedDict, cast
+from typing import Literal, TypedDict
 
 from belay import list_devices, Device, UsbSpecifier
-from simple_term_menu import TerminalMenu
-from pathlib import Path
-import os
+import typer
 
 from cli.tools.cache import get_cache_folder
 
@@ -36,6 +34,55 @@ def list_entries() -> dict[str, DeviceEntry]:
 
   return entries
 
+from prompt_toolkit import Application
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Layout, HSplit, Window
+from prompt_toolkit.layout.controls import FormattedTextControl
+
+def select_with_hover(choices, title="", on_highlight=None):
+    idx = [0]
+
+    def render():
+        lines = []
+        if title:
+            lines.append(("bold", title + "\n"))
+        for i, c in enumerate(choices):
+            style = "reverse" if i == idx[0] else ""
+            prefix = "> " if i == idx[0] else "  "
+            lines.append((style, f"{prefix}{c}\n"))
+        return lines
+
+    def fire():
+        if on_highlight is not None:
+            on_highlight(choices[idx[0]])
+
+    kb = KeyBindings()
+
+    @kb.add("up")
+    @kb.add("k")
+    def _(e):
+        idx[0] = (idx[0] - 1) % len(choices); fire()
+
+    @kb.add("down")
+    @kb.add("j")
+    def _(e):
+        idx[0] = (idx[0] + 1) % len(choices); fire()
+
+    @kb.add("enter")
+    def _(e):
+        e.app.exit(result=idx[0])
+
+    @kb.add("c-c")
+    @kb.add("escape")
+    def _(e):
+        e.app.exit(result=None)
+
+    ctrl = FormattedTextControl(render, focusable=True, show_cursor=False)
+    app = Application(layout=Layout(HSplit([Window(ctrl)])), key_bindings=kb, erase_when_done=True)
+
+    fire()
+    return app.run()
+
 def ask_device(name: str = "") -> DeviceEntry | None:
 
   choices: list[str] = []
@@ -59,23 +106,20 @@ def ask_device(name: str = "") -> DeviceEntry | None:
 
   choices.append("None")
 
-  menu = TerminalMenu(
-    choices,
-    preview_command=on_hover,
-    preview_size=0.25,
-    title=f"Select a {name.capitalize()} Pico"
+  selection = select_with_hover(
+    title=f"Select a {name.capitalize()} Pico",
+    choices=choices,
+    on_highlight=on_hover
   )
-
-  choice = cast(int, menu.show())
 
   for entry in entries.values():
     entry["board"]("led.value(0)")
     # entry["board"].soft_reset()
 
-  if choices[choice] == "None":
+  if choices[selection] == "None":
     return
   else:
-    return entries[choices[choice]]
+    return entries[choices[selection]]
 
 
 def get_pico(name: Literal["student", "helper"] | str) -> DeviceEntry | None:
@@ -103,7 +147,7 @@ def get_pico(name: Literal["student", "helper"] | str) -> DeviceEntry | None:
 
   if not entry: return None
 
-  if TerminalMenu(["Yes", "No"], title="Remember your selection?").show() == 0:
+  if typer.confirm("Remember your selection?", default=True):
     with open(cache_file, "a") as file:
       file.write(f"\n{entry['usb'].serial_number}")
 

@@ -7,8 +7,6 @@ requires-python = ">=3.14"
 dependencies = [
     "belay>=0.30.1",
     "micropython-rp2-stubs>=1.28.0.post4",
-    "simple-term-menu>=1.6.6",
-    "typer>=0.26.7",
 ]
 
 [project.scripts]
@@ -25,5 +23,7 @@ packages = ["cli"]
 dev = [
     "autopep8>=2.3.2",
     "mpremote>=1.28.0",
+    "prompt-toolkit>=3.0.52",
     "pylint>=4.0.6",
+    "typer>=0.26.7",
 ]

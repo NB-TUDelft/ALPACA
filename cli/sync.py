@@ -13,7 +13,9 @@ import time
 
 def sync(
   connect: Annotated[str, typer.Option(help="Connect to an pico after syncing")] = ""
-):
+):  
+  choices = []
+
   for pico_name in ["student", "helper"]:
     entry = get_pico(pico_name)
   
@@ -42,9 +44,12 @@ def sync(
       device.sync(src, progress_update=progress_update)
       progress_update(description=f"{pico_name.capitalize()} Complete.")
 
-      device.soft_reset()
+      choices.append(device)
 
       progress.stop()
+
+  for device in choices:
+    device.soft_reset()
   
   if connect != "":
     entry_to_connect = get_pico(connect)
