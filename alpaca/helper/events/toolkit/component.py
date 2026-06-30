@@ -37,7 +37,7 @@ probe_b = Pin(_PROBE_B_PIN)
 adc_a = ADC(_ADC_A_PIN)
 adc_b = ADC(_ADC_B_PIN)
 
-N_AVG = const(15)
+N_AVG = const(60)
 
 def read_adc(adc: ADC):
   raw_a = sum(adc.read_u16() for _ in range(N_AVG)) / N_AVG
@@ -62,8 +62,14 @@ def set_direction(direction): # typing.Literal["forward", "reverse"] | None = No
     probe_b.init(Pin.IN)
 
 @micropython.native
-def display_component(last_tick):
+def fmt_k(num):
+  if num > 1e3:
+    return f"{(num / 1000):.2f}k {_OMEGA}"
+  else:
+    return f"{round(num)} {_OMEGA}"
 
+@micropython.native
+def display_component(last_tick):
   set_direction("forward")
 
   val_adc_a = read_adc(adc_a)
@@ -71,9 +77,12 @@ def display_component(last_tick):
 
   v_drop = val_adc_a - val_adc_b
 
-  R = 20e3 / (3.3 - v_drop) * v_drop
+  R = 6.6e2 / (3.3 - v_drop) * v_drop
 
-  display.set_text(f"{R:.2f}", "RESISTOR")
+  if R > 80e3:
+    display.set_text("No  Comp", "Detected")
+  else:
+    display.set_text(fmt_k(R + 1.3), "RESISTOR")
 
   # if isCap:
   #   return display.set_text("CAPACITOR", f"{C:.2f}F")

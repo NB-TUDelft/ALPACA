@@ -20,8 +20,8 @@ menu_open = False
 last_press = 0
 
 DISPLAYS = [
-  ("COMP", display_component),
   ("VOLT", display_voltage),
+  ("COMP", display_component),
 ]
 
 @link.event

@@ -38,7 +38,6 @@ class HD44780:
         self._pulse()
 
     def _send(self, value, rs):
-        # self.rs.init(Pin.OUT)
         self.rs.value(rs)
         self._write4(value >> 4)
         self._write4(value & 0x0F)

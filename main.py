@@ -7,11 +7,15 @@ import belay
 # Helper - /dev/cu.usbmodem1101   (standalone, no Belay)
 # Student - /dev/cu.usbmodem1401
 student = belay.Device("/dev/cu.usbmodem1401")
-helper = belay.Device("/dev/cu.usbmodem1101")
+# helper = belay.Device("/dev/cu.usbmodem1101")
+
+@student.task
+def main():
+  pin = Pin(23234)
 
 
-student("from machine import Pin")
-student('Pin(25, Pin.OUT).value(1)')
+
+main()
 
 
 # @student.setup
