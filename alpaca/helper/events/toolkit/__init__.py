@@ -8,6 +8,8 @@ from machine import Pin
 from display import display
 from events.toolkit.voltmeter import display_voltage
 from events.toolkit.component import display_component
+from events.toolkit.custom import display_custom
+
 
 _FUNCTION_BTN_PIN = const(16)
 func_btn = Pin(_FUNCTION_BTN_PIN, Pin.IN, Pin.PULL_UP)
@@ -20,8 +22,9 @@ menu_open = False
 last_press = 0
 
 DISPLAYS = [
-  ("VOLT", display_voltage),
   ("COMP", display_component),
+  ("VOLT", display_voltage),
+  ("CSTM", display_custom),
 ]
 
 @link.event

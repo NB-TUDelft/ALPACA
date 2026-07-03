@@ -17,5 +17,5 @@ link = Link(UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1), timeout=1000))
 def ping():
     return link.call(PING)
 
-def lcd_putstr(text):
-    return link.call(LCD_PUTSTR, text)
+def set_screen_text(text_up = "", text_down = ""):
+    return link.call(LCD_PUTSTR, text_up, text_down)

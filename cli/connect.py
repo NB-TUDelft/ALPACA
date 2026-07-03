@@ -8,7 +8,7 @@ from typing import Annotated
 import typer
 
 from cli.tools.cache import get_cache_folder
-from cli.tools.pico import get_pico
+from cli.tools.pico import get_pico, list_entries
 
 
 def connect(pico_name: Annotated[str, typer.Argument(help="Pico to connect i.e. student, helper...")]):
@@ -16,7 +16,8 @@ def connect(pico_name: Annotated[str, typer.Argument(help="Pico to connect i.e. 
 
   if not entry: return
 
-  entry["board"].close()
+  for e in list_entries().values():
+    e["board"].close()
 
   port = entry["usb"].to_port()
   

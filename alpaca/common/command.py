@@ -3,6 +3,7 @@ import ustruct as struct
 # Opcodes
 PING = const(0x01)
 LCD_PUTSTR = const(0x02)
+SET_PIN = const(0x03)
 
 # == Command Table
 # https://docs.python.org/3/library/struct.html#format-characters
@@ -13,6 +14,7 @@ LCD_PUTSTR = const(0x02)
 COMMANDS = {
     PING: ("ping", "", "B"),
     LCD_PUTSTR: ("lcd_putstr", "ss", ""),
+    SET_PIN: ("set_pin", "B?", ""),
 }
 
 def _pack_one(fmt, val):

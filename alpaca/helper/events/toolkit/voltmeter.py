@@ -18,6 +18,6 @@ def display_voltage(last_tick):
   # VOM Polarity Pin GP26 is also connected to DB7
   # of the LCD display 
   if display.driver.data[3].value() == 1:
-    display.set_text(f"+{value:.2f}V")
+    display.set_text(f"+{value:.2f}V" + "\x10")
   else:
     display.set_text(f"-{value:.2f}V")
