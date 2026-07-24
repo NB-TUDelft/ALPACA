@@ -35,12 +35,19 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
 
     (stubs_folder / file).unlink(True)
 
+
+  (stubs_folder / "README.md").write_text(
+    "Stubs for " +
+    (PROJECT_ROOT / 'README.md').read_text(encoding='utf-8')
+  )
+
   parent = toml.load(PROJECT_ROOT / "pyproject.toml")
 
   toml.dump({
     "project": {
       **{k: v for k, v in parent["project"].items() if isinstance(v, str)},
       "name": f"{parent['project']['name']}-stubs",
+      "description": "Stub files for ALPACA 2.0 for NB2420 Electronic Instrumentation course of TU Delft"
     },
     "build-system": {
       "requires": ["setuptools>=61"],

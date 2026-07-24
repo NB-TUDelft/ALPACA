@@ -1,15 +1,14 @@
-# Alpaca 2.0
+# ALPACA 2.0
 
 > © Copyright Delft University of Technology, CC BY 4.0.
 
+**ALPACA (Advanced Learning Platform for Analog Circuits and Automation)** is a device built on RP2 and MicroPython and equipped with several digital tools to be a guide in introduction to digital systems and electronics for NB2420 Electronic Instrumentation course of TU Delft.
 
+ALPACA splits work across two Picos:
 
-A two-board electronics toolkit for the classroom, built on RP2 and MicroPython.
-
-Alpaca splits work across two Picos:
-
-- **Student**: the board a student writes code on via Belay. It exposes a tiny RPC
-  client so student programs can ask the Helper to do things.
+- **Student Pico**: the board a student writes code on via Belay. It exposes a tiny RPC
+  client so student programs can ask the Helper to do things. Student Pico is equiiped with 
+  a double channel DAC.
 
 - **Helper**: a self-contained instrument. It drives an LCD and runs
   a set of measurement screens (voltmeter, component/resistance tester) that
@@ -95,3 +94,14 @@ The first time the CLI needs a board it lists the connected Picos in a terminal
 menu. Hovering an entry lights that board's onboard LED so you can tell
 which is which, and you can choose to remember the selection — it's cached per
 role under `.alpaca/` so later runs skip the prompt.
+
+## Building
+
+The repository workflow should build and publish stubs, and assemble firmware images on creation of a version tag.
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The MicroPython version for firmware is set inside the `build-firmware.yml` (currently 1.28.0).

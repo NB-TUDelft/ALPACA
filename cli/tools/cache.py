@@ -17,7 +17,7 @@ def collect_files(pico_name: str):
 
   shutil.rmtree(src, ignore_errors=True)
 
-  ignore = shutil.ignore_patterns("**/__pycache__")
+  ignore = shutil.ignore_patterns("__pycache__")
 
   shutil.copytree(PROJECT_ROOT / "alpaca" / "common", src, dirs_exist_ok=True, ignore=ignore)
   shutil.copytree(PROJECT_ROOT / "alpaca" / pico_name, src, dirs_exist_ok=True, ignore=ignore)
