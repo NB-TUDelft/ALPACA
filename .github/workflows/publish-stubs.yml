@@ -17,7 +17,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Generate stubs
-        run: uv run generate-stubs student
+        run: uv run alpaca generate-stubs student
 
       - name: Build
         working-directory: .alpaca/stubs
