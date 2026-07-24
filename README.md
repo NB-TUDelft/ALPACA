@@ -95,12 +95,3 @@ The first time the CLI needs a board it lists the connected Picos in a terminal
 menu. Hovering an entry lights that board's onboard LED so you can tell
 which is which, and you can choose to remember the selection — it's cached per
 role under `.alpaca/` so later runs skip the prompt.
-
-## Development
-
-Dev tooling is in the `dev` dependency group (`autopep8`, `pylint`,
-`mpremote`):
-
-```bash
-uv sync --group dev
-```

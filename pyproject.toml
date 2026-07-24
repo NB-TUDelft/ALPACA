@@ -8,6 +8,10 @@ license="CC-BY-4.0"
 dependencies = [
     "belay>=0.30.1",
     "micropython-rp2-stubs>=1.28.0.post4",
+    "mpremote>=1.28.0",
+    "mypy>=2.3.0",
+    "toml>=0.10.2",
+    "typer>=0.26.7",
 ]
 
 [project.scripts]
@@ -19,14 +23,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["cli"]
-
-[project.optional-dependencies]
-dev = [
-    "autopep8>=2.3.2",
-    "mpremote>=1.28.0",
-    "mypy>=2.3.0",
-    "prompt-toolkit>=3.0.52",
-    "pylint>=4.0.6",
-    "toml>=0.10.2",
-    "typer>=0.26.7",
-]
