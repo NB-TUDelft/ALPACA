@@ -1,0 +1,28 @@
+# .github/workflows/publish-stubs.yml
+name: Publish stubs to PyPI
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Generate stubs
+        run: uv run generate-stubs student
+
+      - name: Build
+        working-directory: .alpaca/stubs
+        run: uv build
+
+      - name: Publish to PyPI
+        working-directory: .alpaca/stubs
+        run: uv publish

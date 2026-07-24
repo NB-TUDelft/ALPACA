@@ -31,7 +31,7 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
 
     os.mkdir(stubs_folder / base_name)
 
-    os.replace(stubs_folder / file, stubs_folder / base_name / "__init__.py")
+    os.replace(stubs_folder / file, stubs_folder / base_name / "__init__.pyi")
 
     (stubs_folder / file).unlink(True)
 
