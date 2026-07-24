@@ -43,6 +43,8 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
 
   parent = toml.load(PROJECT_ROOT / "pyproject.toml")
 
+  packages = [f for f in os.listdir(stubs_folder) if (stubs_folder / f).is_dir()]
+
   toml.dump({
     "project": {
       **{k: v for k, v in parent["project"].items() if isinstance(v, str)},
@@ -56,8 +58,8 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
     # Some pyright magic
     "tool": {
       "setuptools": {
-        "packages": os.listdir(stubs_folder),
-        "package-data": dict.fromkeys(os.listdir(stubs_folder), ["*.pyi"])
+        "packages": packages,
+        "package-data": dict.fromkeys(packages, ["*.pyi"])
       }
     }
   }, (stubs_folder / "pyproject.toml").open("w+"))
