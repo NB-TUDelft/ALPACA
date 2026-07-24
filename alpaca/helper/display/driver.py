@@ -1,5 +1,5 @@
 from machine import Pin
-from time import sleep_us, sleep_ms
+from utime import sleep_us, sleep_ms
 
 # Driver for the HD44780 LCD Display on the board
 # Based on https://github.com/wjdp/micropython-lcd/blob/master/lcd.py

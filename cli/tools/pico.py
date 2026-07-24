@@ -152,4 +152,3 @@ def get_pico(name: Literal["student", "helper"] | str) -> DeviceEntry | None:
       file.write(f"\n{entry['usb'].serial_number}")
 
   return entry
-  

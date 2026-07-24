@@ -1,6 +1,6 @@
 import micropython
 from machine import Pin, ADC
-from time import sleep_ms, ticks_ms, ticks_us, ticks_diff, sleep_us
+from utime import sleep_ms, ticks_ms, ticks_us, ticks_diff, sleep_us
 from math import log
 
 from display import display

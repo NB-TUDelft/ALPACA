@@ -1,4 +1,4 @@
-from time import ticks_diff, ticks_ms
+from utime import ticks_diff, ticks_ms
 import micropython
 from machine import Pin
 from display.driver import HD44780

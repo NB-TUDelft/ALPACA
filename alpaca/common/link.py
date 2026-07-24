@@ -1,6 +1,6 @@
 from micropython import const
 import micropython
-from time import ticks_ms, ticks_diff, sleep
+from utime import ticks_ms, ticks_diff, sleep
 from command import COMMANDS, pack_args, unpack_args
 
 OK = const(0x00)

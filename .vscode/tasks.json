@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Alpaca Sync",
+            "type": "shell",
+            "command": "uv run alpaca sync",
+            "problemMatcher": []
+        }
+    ]
+}

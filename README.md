@@ -1,13 +1,17 @@
 # Alpaca 2.0
 
+> © Copyright Delft University of Technology, CC BY 4.0.
+
+
+
 A two-board electronics toolkit for the classroom, built on RP2 and MicroPython.
 
 Alpaca splits work across two Picos:
 
-- **Student** — the board a student writes code on via Belay. It exposes a tiny RPC
+- **Student**: the board a student writes code on via Belay. It exposes a tiny RPC
   client so student programs can ask the Helper to do things.
 
-- **Helper** — a self-contained instrument. It drives an LCD and runs
+- **Helper**: a self-contained instrument. It drives an LCD and runs
   a set of measurement screens (voltmeter, component/resistance tester) that
   the user can cycles through. It also answers commands sent by the Student
   over a UART link.

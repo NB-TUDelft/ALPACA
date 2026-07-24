@@ -2,7 +2,7 @@ from typing import Annotated
 
 import typer
 
-from cli.tools.cache import get_cache_folder, PROJECT_ROOT
+from cli.tools.cache import collect_files, get_cache_folder, PROJECT_ROOT
 from cli.tools.pico import get_pico
 from rich.progress import Progress
 from cli.connect import connect as connect_cmd
@@ -10,6 +10,7 @@ import os
 import signal
 import shutil
 import time
+import importlib.metadata
 
 def sync(
   connect: Annotated[str, typer.Option(help="Connect to an pico after syncing")] = ""
@@ -26,13 +27,7 @@ def sync(
     device = entry["board"]
 
     # Prepare the root
-    alpaca_folder = get_cache_folder()
-    src = alpaca_folder / f"{pico_name}_root"
-
-    shutil.rmtree(src, ignore_errors=True)
-
-    shutil.copytree(PROJECT_ROOT / "alpaca" / "common", src, dirs_exist_ok=True)
-    shutil.copytree(PROJECT_ROOT / "alpaca" / pico_name, src, dirs_exist_ok=True)
+    src = collect_files(pico_name)
 
     # Move the root to pico
     with Progress() as progress:
