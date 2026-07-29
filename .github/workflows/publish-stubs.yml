@@ -1,28 +1,52 @@
 # .github/workflows/publish-stubs.yml
-name: Publish stubs to PyPI
+#
+# Publishes the generated `alpaca-stubs` package to PyPI and anaconda.org.
+#
+# NOTE: PyPI matches the trusted publisher on THIS file's name.
+
+name: Publish stubs
 
 on:
   push:
     tags: ["v*.*.*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-stubs-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  firmware:
+    # Release gate. These used to fire on the same tag independently, so a
+    # firmware failure after the stubs had published burned that version on
+    # PyPI for good. Tags only: a pull request just dry-runs the stubs.
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/build-firmware.yml
+    permissions:
+      contents: write # the firmware workflow attaches .uf2 files to the release
+
   publish:
+    needs: firmware
+    # always(), so a deliberately skipped firmware build on a pull request does
+    # not block the dry run, while a failed one still does.
+    if: always() && needs.firmware.result != 'failure' && needs.firmware.result != 'cancelled'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      id-token: write
+      id-token: write # mints the OIDC token for PyPI; without it, auth fails
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v5
 
-      - name: Generate stubs
-        run: uv run alpaca generate-stubs student
-
-      - name: Build
-        working-directory: .alpaca/stubs
-        run: uv build
-
-      - name: Publish to PyPI
-        working-directory: .alpaca/stubs
-        run: uv publish
+      - uses: PlohnenSoftware/PyPI-Anaconda-Publish@v2
+        with:
+          prepare: uv run alpaca generate-stubs student
+          project_dir: .alpaca/stubs
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          anaconda_owner: NB_TUDelft
+          anaconda_api_key: ${{ secrets.ANACONDA_API_KEY }}
+          dry_run: ${{ github.event_name == 'pull_request' }}

@@ -36,9 +36,25 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
     (stubs_folder / file).unlink(True)
 
 
+  # This package deliberately ships no runtime dependencies. The one it would
+  # want, micropython-rp2-stubs, exists only on PyPI -- it is on no anaconda.org
+  # channel, and neither is its own dependency micropython-stdlib-stubs --  so
+  # declaring it would leave the conda package unsolvable. The isinstance(str)
+  # filter below drops `dependencies` anyway; this note is here so that stays a
+  # decision rather than an accident. Users who want stubs for the MicroPython
+  # builtins install them separately, as the README below explains.
   (stubs_folder / "README.md").write_text(
-    "Stubs for " +
-    (PROJECT_ROOT / 'README.md').read_text(encoding='utf-8')
+    "Stubs for "
+    + (PROJECT_ROOT / 'README.md').read_text(encoding='utf-8')
+    + "\n\n## MicroPython builtins\n\n"
+      "These stubs cover ALPACA itself. For `machine`, `rp2` and the rest of\n"
+      "the MicroPython standard library, install those stubs alongside:\n\n"
+      "```bash\n"
+      "pip install micropython-rp2-stubs\n"
+      "```\n\n"
+      "They are not published on any conda channel, so they are not declared\n"
+      "as a dependency here. Without them only the MicroPython builtins stay\n"
+      "unresolved in your editor; the ALPACA stubs themselves work either way.\n"
   )
 
   parent = toml.load(PROJECT_ROOT / "pyproject.toml")
@@ -60,6 +76,19 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
       "setuptools": {
         "packages": packages,
         "package-data": dict.fromkeys(packages, ["*.pyi"])
+      },
+      # Read by PlohnenSoftware/PyPI-Anaconda-Publish, which renders the conda
+      # recipe from this file so the conda package cannot drift from the PyPI one.
+      "conda-recipe": {
+        # Only .pyi files, so a single noarch build serves every architecture
+        # and every Python the inherited requires-python allows.
+        "noarch": True,
+        "build-channels": ["conda-forge"],
+        "maintainers": ["NB-TUDelft"],
+        # Deliberately empty. A PEP 561 stub-only distribution ships no runtime
+        # module, so importing these packages is *meant* to fail -- listing them
+        # here would fail the conda test phase.
+        "test-imports": []
       }
     }
   }, (stubs_folder / "pyproject.toml").open("w+"))
