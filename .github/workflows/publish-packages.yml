@@ -43,6 +43,7 @@ jobs:
 
       - uses: PlohnenSoftware/PyPI-Anaconda-Publish@v2
         with:
+          publish_pypi: false 
           prepare: uv build
           project_dir: .
           tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
