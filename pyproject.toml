@@ -1,6 +1,6 @@
 [project]
 name = "alpaca"
-version = "0.3.0"
+version = "0.3.1"
 description = "Libraries for ALPACA 2.0 - NB2420 Electronic Instrumentation"
 readme = "README.md"
 requires-python = ">=3.14"
