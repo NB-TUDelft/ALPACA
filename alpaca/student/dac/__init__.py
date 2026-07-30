@@ -49,7 +49,7 @@ class DAC:
   # @staticmethod
   # def sync(worker_1: DACWorker, worker_2: DACWorker):
   #   if worker_1.dac.channel == worker_2.dac.channel:
-  #     return ValueError("DAC inputs should be on different channels")
+  #     return ValueError("DAC inputs should be on different channels
 
 class DACWorker:
   def __init__(

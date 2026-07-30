@@ -8,10 +8,7 @@ on:
         description: "MicroPython git tag/branch to build from"
         type: string
         default: "v1.28.0"
-  # Version tags come in through publish-stubs.yml, which calls this and only
-  # publishes if it passes. No `push: tags` trigger of its own -- that would
-  # build the firmware twice on every tag and cut the release job loose from
-  # the gate it is supposed to be.
+
   workflow_call:
     inputs:
       micropython_ref:
@@ -103,7 +100,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    # Only publish a release for pushed version tags.
+
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write

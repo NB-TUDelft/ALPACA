@@ -30,6 +30,12 @@ ground:
 
 ## Repository layout
 
+`📁 alpaca` folder contains the libraries for Picos.
+`📁 main` contains the desktop-side library. It is published under the import
+name `alpaca` (see the `sources` mapping in `pyproject.toml`), so installed
+users write `from alpaca import list_boards`.
+`📁 cli` contains the ALPACA CLI for managing the boards 
+
 `alpaca/common` is copied alongside `alpaca/student` or `alpaca/helper` onto
 each board at sync time, which is why on-device imports are flat
 (`from command import ...`, `from link import ...`).
