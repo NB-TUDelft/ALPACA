@@ -8,6 +8,13 @@ AWG_R2R_LOAD = const(0x04)
 AWG_R2R_START = const(0x05)
 AWG_R2R_STOP = const(0x06)
 AWG_R2R_OFFSET = const(0x07)
+AWG_R2R_GEN = const(0x08)
+
+# Waveform IDs for AWG_R2R_GEN
+WAVE_SINE = const(0x00)
+WAVE_BLOCK = const(0x01)
+WAVE_TRIANGLE = const(0x02)
+WAVE_SAWTOOTH = const(0x03)
 
 # == Command Table
 # https://docs.python.org/3/library/struct.html#format-characters
@@ -25,6 +32,7 @@ COMMANDS = {
     AWG_R2R_START: ("awg_r2r_start", "Hi", "i"),
     AWG_R2R_STOP: ("awg_r2r_stop", "", ""),
     AWG_R2R_OFFSET: ("awg_r2r_offset", "H?", ""),
+    AWG_R2R_GEN: ("awg_r2r_gen", "Biff", "f"),
 }
 
 def _pack_one(fmt, val):

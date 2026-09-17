@@ -1,11 +1,22 @@
 import rp2
 import uctypes
+from math import sin, pi
 from array import array
 from micropython import const
 from machine import Pin, PWM, freq as sysfreq
 
 from bus import link
-from command import AWG_R2R_LOAD, AWG_R2R_START, AWG_R2R_STOP, AWG_R2R_OFFSET
+from command import (
+    AWG_R2R_LOAD,
+    AWG_R2R_START,
+    AWG_R2R_STOP,
+    AWG_R2R_OFFSET,
+    AWG_R2R_GEN,
+    WAVE_SINE,
+    WAVE_BLOCK,
+    WAVE_TRIANGLE,
+    WAVE_SAWTOOTH,
+)
 
 MAX_SAMPLES = const(4096) # 2**12
 
@@ -37,6 +48,14 @@ _TREQ_PERMANENT = const(0x3F)
 _SLOW_CYCLES = const(256)
 _FAST_MIN_RATE = const(2500)
 _MIN_RATE = const(10)
+
+# Shortcut (AWG_R2R_GEN) synthesis: the ladder spans 0-_FS_VOLTS over the 10-bit
+# code range, and awg_r2r_gen aims for a DAC update rate near _GEN_TARGET_RATE.
+_MAX_CODE = const(1023)
+_FS_VOLTS = 3.3
+_TWO_PI = 2 * pi
+_GEN_TARGET_RATE = const(500000)
+_GEN_MIN_SAMPLES = const(16)
 
 # Sample buffer: 16-bit little-endian samples, 10 bits used (0-1023).
 buf = bytearray(2 * MAX_SAMPLES)
@@ -108,8 +127,9 @@ def awg_r2r_load(offset, data):
     buf[offset:offset + len(data)] = data
 
 
-@link.register(AWG_R2R_START)
-def awg_r2r_start(nsamples, sample_rate_hz):
+def _start(nsamples, sample_rate_hz):
+    """Configure the SM + DMA loop to play buf[:nsamples] at the requested
+    rate. Returns the actual sample rate achieved (see the divider math)."""
     global _sm, _data_dma, _ctrl_dma
 
     if not 1 <= nsamples <= MAX_SAMPLES:
@@ -175,6 +195,63 @@ def awg_r2r_start(nsamples, sample_rate_hz):
     # Exact achieved rate from the 16.8 fractional clock divider.
     div256 = (sysclk * 256 + smfreq // 2) // smfreq
     return int(sysclk * 256 // (div256 * cycles))
+
+
+@link.register(AWG_R2R_START)
+def awg_r2r_start(nsamples, sample_rate_hz):
+    return _start(nsamples, sample_rate_hz)
+
+
+def _fill_wave(waveform, nsamples, amplitude_vpp, duty):
+    # One period into buf, centered on mid-scale with a peak-to-peak swing of
+    # amplitude_vpp volts, clipped to the ladder's 0-_FS_VOLTS range.
+    dev = (amplitude_vpp * 0.5) / _FS_VOLTS * _MAX_CODE
+    center = _MAX_CODE * 0.5
+
+    for i in range(nsamples):
+        p = i / nsamples
+        if waveform == WAVE_SINE:
+            s = sin(_TWO_PI * p)
+        elif waveform == WAVE_BLOCK:
+            s = 1.0 if p < duty else -1.0
+        elif waveform == WAVE_TRIANGLE:
+            s = 4.0 * p - 1.0 if p < 0.5 else 3.0 - 4.0 * p
+        elif waveform == WAVE_SAWTOOTH:
+            s = 2.0 * p - 1.0
+        else:
+            raise ValueError("bad waveform")
+
+        code = int(center + dev * s + 0.5)
+        if code < 0:
+            code = 0
+        elif code > _MAX_CODE:
+            code = _MAX_CODE
+
+        buf[2 * i] = code & 0xFF
+        buf[2 * i + 1] = code >> 8
+
+
+@link.register(AWG_R2R_GEN)
+def awg_r2r_gen(waveform, frequency_hz, amplitude_vpp, duty_cycle):
+    if frequency_hz < 1:
+        raise ValueError("bad frequency")
+    if waveform == WAVE_BLOCK and not 0.0 < duty_cycle < 1.0:
+        raise ValueError("bad duty cycle")
+
+    # More points per period at low frequencies, without the rate outrunning
+    # the SM at high ones.
+    nsamples = _GEN_TARGET_RATE // frequency_hz
+    if nsamples < _GEN_MIN_SAMPLES:
+        nsamples = _GEN_MIN_SAMPLES
+    elif nsamples > MAX_SAMPLES:
+        nsamples = MAX_SAMPLES
+
+    # Stop before filling: _fill_wave rewrites the buffer the DMA loop reads.
+    stop_awg()
+    _fill_wave(waveform, nsamples, amplitude_vpp, duty_cycle)
+
+    achieved_rate = _start(nsamples, frequency_hz * nsamples)
+    return achieved_rate / nsamples
 
 
 @link.register(AWG_R2R_STOP)

@@ -16,6 +16,11 @@ from command import (
     AWG_R2R_START,
     AWG_R2R_STOP,
     AWG_R2R_OFFSET,
+    AWG_R2R_GEN,
+    WAVE_SINE,
+    WAVE_BLOCK,
+    WAVE_TRIANGLE,
+    WAVE_SAWTOOTH,
 )
 from link import Link
 
@@ -61,3 +66,57 @@ def awg_r2r_offset(magnitude, negative = False):
     """Set the analog offset stage: magnitude 0.0-1.0 (PWM duty on
     OFFSET_PWM), negative selects the sign via OFFSET_POL."""
     return link.call(AWG_R2R_OFFSET, int(magnitude * 65535) & 0xFFFF, negative)
+
+
+class _Waveform:
+    """A shortcut waveform the Helper synthesizes itself: playing it sends one
+    small payload instead of loading samples over the wire. Use it as a context
+    manager so the AWG stops on exit, or drive it with .start()/.stop()."""
+
+    def __init__(self, waveform, frequency_hz, amplitude_vpp, duty_cycle):
+        self._waveform = waveform
+        self._frequency_hz = frequency_hz
+        self._amplitude_vpp = amplitude_vpp
+        self._duty_cycle = duty_cycle
+        self.frequency_hz = None  # actual rate, filled in by start()
+
+    def start(self):
+        self.frequency_hz = link.call(
+            AWG_R2R_GEN,
+            self._waveform,
+            int(self._frequency_hz),
+            float(self._amplitude_vpp),
+            float(self._duty_cycle),
+        )
+        return self.frequency_hz
+
+    def stop(self):
+        return link.call(AWG_R2R_STOP)
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.stop()
+        return False
+
+
+class FunctionGenerator:
+    """Shortcut waveforms on the Helper's R-2R ladder DAC (GPIO0-9). Amplitudes
+    are volts peak-to-peak around mid-rail, clipped to the ladder's 0-3.3V."""
+
+    def sine(self, frequency_hz, amplitude_vpp):
+        return _Waveform(WAVE_SINE, frequency_hz, amplitude_vpp, 0.5)
+
+    def block(self, frequency_hz, amplitude_vpp, duty_cycle = 0.5):
+        return _Waveform(WAVE_BLOCK, frequency_hz, amplitude_vpp, duty_cycle)
+
+    def triangle(self, frequency_hz, amplitude_vpp):
+        return _Waveform(WAVE_TRIANGLE, frequency_hz, amplitude_vpp, 0.5)
+
+    def sawtooth(self, frequency_hz, amplitude_vpp):
+        return _Waveform(WAVE_SAWTOOTH, frequency_hz, amplitude_vpp, 0.5)
+
+
+function_generator = FunctionGenerator()
