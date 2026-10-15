@@ -60,9 +60,7 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
   toml.dump({
     "project": {
       **{k: v for k, v in parent["project"].items() if isinstance(v, str)},
-      # The pre-existing PyPI project; deliberately not derived from the
-      # distribution name, which was renamed to alpaca2.
-      "name": "alpaca-stubs",
+      "name": f"{parent['project']['name']}-stubs",
       "description": "Stub files for ALPACA 2.0 for NB2420 Electronic Instrumentation course of TU Delft"
     },
     "build-system": {

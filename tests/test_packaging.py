@@ -25,3 +25,18 @@ def test_collect_files_uses_cwd_cache_and_board_libs(tmp_path, monkeypatch):
   assert (src / "version.py").read_text() == (
     f'ALPACA_FW_VER="{importlib.metadata.version("alpaca2")}"'
   )
+
+
+def test_generated_stubs_project_is_alpaca2_stubs(tmp_path, monkeypatch):
+  from alpaca.cli.generate_stubs import generate_stubs_cmd
+
+  monkeypatch.chdir(tmp_path)
+  generate_stubs_cmd("student")
+
+  generated = tomllib.loads(
+    (tmp_path / ".alpaca" / "stubs" / "pyproject.toml").read_text()
+  )
+  parent = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+
+  assert generated["project"]["name"] == "alpaca2-stubs"
+  assert generated["project"]["version"] == parent["version"]
