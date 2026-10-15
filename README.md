@@ -31,10 +31,10 @@ ground:
 ## Repository layout
 
 `📁 alpaca` folder contains the libraries for Picos.
-`📁 main` contains the desktop-side library. It is published under the import
-name `alpaca` (see the `sources` mapping in `pyproject.toml`), so installed
-users write `from alpaca import list_boards`.
-`📁 cli` contains the ALPACA CLI for managing the boards 
+`📁 src/alpaca` contains the desktop-side library and the ALPACA CLI for
+managing the boards (`src/alpaca/cli`). It is published on PyPI as `alpaca2`,
+but the import name and the command stay `alpaca`, so installed users write
+`from alpaca import list_boards`.
 
 `alpaca/common` is copied alongside `alpaca/student` or `alpaca/helper` onto
 each board at sync time, which is why on-device imports are flat
@@ -70,7 +70,12 @@ using `alpaca sync` will copy the files to the root as:
 uv sync
 ```
 
-This installs the project and exposes the `alpaca` command.
+This installs the project and exposes the `alpaca` command. Outside a
+checkout, install the published package instead:
+
+```bash
+pip install alpaca2   # or: uv tool install alpaca2
+```
 
 ## Usage
 

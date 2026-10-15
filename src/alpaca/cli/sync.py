@@ -2,10 +2,10 @@ from typing import Annotated
 
 import typer
 
-from cli.tools.cache import collect_files, get_cache_folder, PROJECT_ROOT
-from cli.tools.pico import get_pico
+from alpaca.cli.tools.cache import collect_files, get_cache_folder, PROJECT_ROOT
+from alpaca.cli.tools.pico import get_pico
 from rich.progress import Progress
-from cli.connect import connect as connect_cmd
+from alpaca.cli.connect import connect as connect_cmd
 import os
 import signal
 import shutil

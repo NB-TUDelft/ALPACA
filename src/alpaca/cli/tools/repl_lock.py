@@ -12,7 +12,7 @@ import signal
 import time
 from pathlib import Path
 
-from cli.tools.cache import get_cache_folder
+from alpaca.cli.tools.cache import get_cache_folder
 
 PAUSE_SIGNAL = signal.SIGUSR1
 

@@ -3,14 +3,16 @@ from typing import Annotated
 
 import typer
 
-from cli.tools.cache import PROJECT_ROOT, collect_files, get_cache_folder
-from mypy import stubgen
+from alpaca.cli.tools.cache import PROJECT_ROOT, collect_files, get_cache_folder
 import os
 import toml
 import importlib.metadata
 
 
 def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name to generate stubs for i.e. student, helper...")]):
+  # Imported here so other CLI commands do not pay for mypy at startup.
+  from mypy import stubgen
+
   src = collect_files(pico_name)
 
   stubs_folder = get_cache_folder() / "stubs"
@@ -58,7 +60,9 @@ def generate_stubs_cmd(pico_name: Annotated[str, typer.Argument(help="Pico name 
   toml.dump({
     "project": {
       **{k: v for k, v in parent["project"].items() if isinstance(v, str)},
-      "name": f"{parent['project']['name']}-stubs",
+      # The pre-existing PyPI project; deliberately not derived from the
+      # distribution name, which was renamed to alpaca2.
+      "name": "alpaca-stubs",
       "description": "Stub files for ALPACA 2.0 for NB2420 Electronic Instrumentation course of TU Delft"
     },
     "build-system": {

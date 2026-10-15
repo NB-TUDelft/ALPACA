@@ -3,7 +3,7 @@ from typing import Literal, TypedDict
 from belay import list_devices, Device, UsbSpecifier
 import typer
 
-from cli.tools.cache import get_cache_folder
+from alpaca.cli.tools.cache import get_cache_folder
 
 class DeviceEntry(TypedDict):
   usb: UsbSpecifier

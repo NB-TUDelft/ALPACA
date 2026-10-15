@@ -83,7 +83,7 @@ jobs:
       - name: Stage artifact
         run: |
           mkdir -p dist
-          VERSION="$(cd alpaca-src && uv run python -c 'import importlib.metadata as m; print(m.version("alpaca"))')"
+          VERSION="$(cd alpaca-src && uv run python -c 'import importlib.metadata as m; print(m.version("alpaca2"))')"
           SRC="micropython/ports/rp2/build-$BOARD/firmware.uf2"
           DEST="dist/alpaca-${{ matrix.role }}-${BOARD}-v${VERSION}-mp${MICROPYTHON_REF}.uf2"
           cp "$SRC" "$DEST"

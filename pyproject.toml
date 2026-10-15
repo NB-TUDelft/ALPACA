@@ -1,31 +1,47 @@
 [project]
-name = "alpaca"
-version = "1.0.0"
+name = "alpaca2"
+version = "1.0.1"
 description = "Libraries for ALPACA 2.0 - NB2420 Electronic Instrumentation"
 readme = "README.md"
 requires-python = ">=3.14"
-license="CC-BY-4.0"
+license = "CC-BY-4.0"
 dependencies = [
     "belay>=0.30.1",
-    "micropython-rp2-stubs>=1.28.0.post4",
     "mpremote>=1.28.0",
     "mypy>=2.3.0",
     "toml>=0.10.2",
     "typer>=0.26.7",
 ]
 
+[project.urls]
+Homepage = "https://github.com/NB-TUDelft/ALPACA"
+Repository = "https://github.com/NB-TUDelft/ALPACA"
+
+# The distribution is "alpaca2" on PyPI/conda, but the import name and the
+# command stay "alpaca".
 [project.scripts]
-alpaca = "cli.main:app"
+alpaca = "alpaca.cli.main:app"
+
+[dependency-groups]
+dev = [
+    "micropython-rp2-stubs>=1.28.0.post4",
+    "pytest>=8",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "src/alpaca"]
+packages = ["src/alpaca"]
+
+# Ship the on-device libraries inside the host package so an installed
+# `alpaca sync` can find them (see alpaca.cli.tools.cache).
+[tool.hatch.build.targets.wheel.force-include]
+"alpaca" = "alpaca/boardlibs"
 
 [tool.hatch.build.targets.sdist]
-include = ["cli", "README.md", "LICENSE"]
+include = ["src", "alpaca", "typings", "tests", "README.md", "LICENSE"]
 
 [tool.conda-recipe]
 "build-channels" = ["conda-forge"]

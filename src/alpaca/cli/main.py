@@ -1,10 +1,10 @@
 import typer
 
-from cli.generate_stubs import generate_stubs_cmd
-from cli.sync import sync as sync_cmd
-from cli.connect import connect as connect_cmd
-from cli.list import list_devices as list_cmd
-from cli.tools.cache import collect_files
+from alpaca.cli.generate_stubs import generate_stubs_cmd
+from alpaca.cli.sync import sync as sync_cmd
+from alpaca.cli.connect import connect as connect_cmd
+from alpaca.cli.list import list_devices as list_cmd
+from alpaca.cli.tools.cache import collect_files
 
 
 app = typer.Typer(help="Alpaca CLI")

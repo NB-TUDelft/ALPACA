@@ -1,5 +1,5 @@
-from cli.tools.cache import get_cache_folder
-from cli.tools.pico import list_entries, DeviceEntry
+from alpaca.cli.tools.cache import get_cache_folder
+from alpaca.cli.tools.pico import list_entries, DeviceEntry
 import typer
 
 def get_type(entry: DeviceEntry):
