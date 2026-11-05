@@ -1,6 +1,8 @@
 from machine import Pin
 from utime import sleep_us, sleep_ms
 
+_STROBE_DELAY_US = const(500)
+
 # Driver for the HD44780 LCD Display on the board
 # Based on https://github.com/wjdp/micropython-lcd/blob/master/lcd.py
 class HD44780:
@@ -27,10 +29,11 @@ class HD44780:
         self.clear()
 
     def _pulse(self):
+        sleep_us(_STROBE_DELAY_US)  # let RS and the data lines settle
         self.e.value(1)
-        sleep_us(1)
+        sleep_us(_STROBE_DELAY_US)
         self.e.value(0)
-        sleep_us(100)
+        sleep_us(_STROBE_DELAY_US)
 
     def _write4(self, nibble):
         for i in range(4):

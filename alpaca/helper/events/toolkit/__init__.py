@@ -6,6 +6,7 @@ from bus import link
 from machine import Pin
 
 from display import display
+from events.toolkit.information import display_info
 from events.toolkit.voltmeter import display_voltage
 from events.toolkit.component import display_component
 from events.toolkit.custom import display_custom
@@ -25,6 +26,7 @@ DISPLAYS = [
   ("COMP", display_component),
   ("VOLT", display_voltage),
   ("CSTM", display_custom),
+  ("INFO", display_info)
 ]
 
 @link.event

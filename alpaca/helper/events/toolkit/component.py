@@ -63,7 +63,8 @@ def fmt_f(c):
   else:
     return f"{(c * 1e12):.0f}pF"
 
-FLANKING_R = const(330) # Ohms
+FLANKING_R = const(10e3) # Ohms
+_CAP_R = const(2000e3)
 
 def is_resistor():
   set_direction("forward")
@@ -74,7 +75,7 @@ def is_resistor():
 
   R = (2 * FLANKING_R) / (3.3 - v_drop) * v_drop
 
-  if (R > 80e3):
+  if (R > _CAP_R):
     return (False, 0)
   else:
     return (True, R)
@@ -146,7 +147,7 @@ def display_component(last_tick):
   The circuit is as follows:
 
   (Probe A)                                (Probe B)
-  GPIO14 --330Ohm-(ADC_A)- [DUT] -(ADC_B)-330Ohm-- GPIO15
+  GPIO14 --10kOhm-(ADC_A)- [DUT] -(ADC_B)-10kOhm-- GPIO15
 
   The function determines DUT capabilities by setting probes to different
   configurations: forward (3.3V->0V), reverse (0V<-3.3V)
