@@ -64,25 +64,78 @@ using `alpaca sync` will copy the files to the root as:
   📄 B.py
 ```
 
-## Setup
+## Installation
+
+Choose the instructions for your environment manager. ALPACA requires Python
+3.14 or newer. The package is called `alpaca2`; the Python import and CLI
+command are both called `alpaca`.
+
+### uv users
+
+To work from this repository, open a terminal in the repository root and run:
 
 ```bash
 uv sync
 ```
 
-This installs the project and exposes the `alpaca` command. Outside a
-checkout, install the published package instead:
+This creates the project's `.venv`, installs the project and its dependencies,
+and makes the CLI available through `uv run alpaca`.
+
+To use the published package without cloning this repository, run the following
+in your working folder:
 
 ```bash
-pip install alpaca2   # or: uv tool install alpaca2
+uv venv --python 3.14
+uv pip install alpaca2
 ```
 
+Run `uv run alpaca` commands from the same folder. In VS Code, select this
+folder's `.venv` using **Python: Select Interpreter** (and select it as the
+kernel when working in a notebook).
+
+### Conda users (course students)
+
+Follow the course manual's Software Installation instructions. You will need
+Conda and VS Code, and a separate environment named `ei-env`.
+
+Download
+[`ei-env.yaml`](https://github.com/NB-TUDelft/Electronic_Instrumentation/blob/HEAD/book/static/ei-env.yaml)
+from the course manuals and open a terminal with Conda available. Change to
+the folder where you saved the file; for example, on macOS:
+
+```bash
+cd ~/Downloads
+```
+
+Create and activate the course environment:
+
+```bash
+conda env create -f ei-env.yaml
+conda activate ei-env
+```
+
+The YAML file installs Python 3.14 or newer, the course's scientific Python
+packages, notebook tools, `alpaca2`, Belay, and the MicroPython RP2 stubs.
+You do not need to install `alpaca2` separately. If you already created
+`ei-env` following the manual, just activate it.
+
+In VS Code, press **Ctrl/Cmd+Shift+P**, choose **Python: Select Interpreter**,
+and select `ei-env`. For notebooks, also select `ei-env` as the kernel.
+Activate `ei-env` in each new terminal before running `alpaca` commands.
+
 ## Usage
+
+Use `uv run alpaca` with uv, or `alpaca` in an activated Conda environment.
+Both run the same CLI.
 
 ### Sync your code onto the boards
 
 ```bash
+# uv
 uv run alpaca sync
+
+# Conda (after conda activate ei-env)
+alpaca sync
 ```
 
 This discovers connected Picos, copies the `common` + `student`/`helper` code
@@ -90,13 +143,21 @@ onto each, and soft-resets them. To drop into a REPL on one board right after
 syncing:
 
 ```bash
+# uv
 uv run alpaca sync --connect student
+
+# Conda
+alpaca sync --connect student
 ```
 
 ### Open a serial REPL
 
 ```bash
+# uv
 uv run alpaca connect student   # or: helper
+
+# Conda
+alpaca connect student          # or: helper
 ```
 
 ### Picking a board
