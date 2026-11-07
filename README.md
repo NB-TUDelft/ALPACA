@@ -15,8 +15,9 @@ ALPACA splits work across two Picos:
   the user can cycles through. It also answers commands sent by the Student
   over a UART link.
 
-A host-side CLI (`alpaca`) handles flashing your code onto the boards and
-opening a serial REPL, so you never have to manage USB ports by hand.
+A host-side CLI (`alpaca`) copies board libraries over USB and opens a serial
+REPL, so you never have to manage USB ports by hand. Firmware installation
+uses the Pico's BOOTSEL mode and the ALPACA UF2 files.
 
 
 The Student and Helper talk over UART0 with a crossover wiring and a shared
@@ -128,7 +129,32 @@ Activate `ei-env` in each new terminal before running `alpaca` commands.
 Use `uv run alpaca` with uv, or `alpaca` in an activated Conda environment.
 Both run the same CLI.
 
-### Sync your code onto the boards
+### Flash firmware with BOOTSEL (normal student setup and updates)
+
+Download the course-specified firmware from the
+[ALPACA releases](https://github.com/NB-TUDelft/ALPACA/releases). Choose the
+`alpaca-student-...uf2` file for the Student Pico and
+`alpaca-helper-...uf2` for the Helper Pico, matching your board model.
+The current build targets `RPI_PICO2`.
+
+For each board that needs updating:
+
+1. Disconnect its USB cable, hold **BOOTSEL**, and reconnect it to your computer.
+2. Release BOOTSEL when the USB drive appears (`RP2350` for Pico 2).
+3. Copy the matching `.uf2` file onto that drive. The Pico reboots automatically.
+
+These images include MicroPython and the ALPACA libraries. **Students normally
+do not need to run `alpaca sync` after flashing.** If the board was previously
+synced, read the [FAQ](#faq) about removing filesystem overrides first.
+The BOOTSEL procedure is also described in the
+[Raspberry Pi documentation](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython).
+
+### Sync board libraries (development or an instructor-directed patch)
+
+Use this to test changed board libraries without rebuilding the firmware.
+Close any notebook or serial connection using the boards first.
+**Back up files saved on the Picos: sync can delete files outside the library
+set.** See the [FAQ](#faq) before using this on a student board.
 
 ```bash
 # uv
@@ -138,9 +164,10 @@ uv run alpaca sync
 alpaca sync
 ```
 
-This discovers connected Picos, copies the `common` + `student`/`helper` code
-onto each, and soft-resets them. To drop into a REPL on one board right after
-syncing:
+This selects connected Picos, copies the `common` + `student`/`helper` code
+onto each selected board's filesystem, and soft-resets them. It uses the
+libraries in your checkout, or those bundled in the installed `alpaca2`
+package. To drop into a REPL on one board right after syncing:
 
 ```bash
 # uv
@@ -166,6 +193,101 @@ The first time the CLI needs a board it lists the connected Picos in a terminal
 menu. Hovering an entry lights that board's onboard LED so you can tell
 which is which, and you can choose to remember the selection — it's cached per
 role under `.alpaca/` so later runs skip the prompt.
+
+## FAQ
+
+### What is the difference between BOOTSEL flashing and `alpaca sync`?
+
+| | BOOTSEL + ALPACA UF2 | `alpaca sync` |
+| --- | --- | --- |
+| Writes | Firmware containing MicroPython and frozen ALPACA libraries | Library files on the writable MicroPython filesystem |
+| Requires | BOOTSEL USB drive mode | Running MicroPython and a USB serial connection |
+| Library format | Precompiled MicroPython bytecode frozen into firmware | `.py` source files (minified by Belay) |
+| Typical use | Student setup, released updates, firmware recovery | Development and instructor-directed temporary patches |
+
+Sync does not rewrite the frozen modules or update MicroPython itself. With
+the default MicroPython 1.28.0 RP2 import path, the current directory is searched
+before frozen modules, so synced modules in the filesystem root **override
+imports of their frozen counterparts**. They remain there after a reboot.
+This follows MicroPython's
+[runtime initialization](https://github.com/micropython/micropython/blob/v1.28.0/py/runtime.c)
+and [RP2 initialization](https://github.com/micropython/micropython/blob/v1.28.0/ports/rp2/main.c).
+
+Startup files are a special case: MicroPython 1.28.0 checks for frozen
+`boot.py` and `main.py` before filesystem copies. Our Helper has a frozen
+`main.py`, so syncing a changed `main.py` does not replace that startup script.
+Use a new UF2 for startup changes. See MicroPython's
+[`pyexec_file_if_exists`](https://github.com/micropython/micropython/blob/v1.28.0/shared/runtime/pyexec.c).
+
+### What should students do when we publish a patch?
+
+For a **board-code patch**, use the course-specified ALPACA UF2 release
+containing the fix and flash the affected board(s) using BOOTSEL. Follow the
+release instructions about which boards need updating. For a **desktop-only
+patch** to the CLI or host library, update `alpaca2` in your Python environment;
+the Picos do not need reflashing.
+
+A Git commit alone does not update installed packages or boards. Maintainers
+must publish a package or build a UF2 containing the patch before students can
+get it through that route. If an instructor asks students to apply a library
+patch through sync, first install the package containing it:
+
+```bash
+# Conda: the course YAML installs alpaca2 through pip
+conda activate ei-env
+python -m pip install --upgrade alpaca2
+alpaca sync
+```
+
+```bash
+# uv: published package in a working folder, outside this repository
+uv pip install --upgrade alpaca2
+uv run alpaca sync
+```
+
+When developing from a checkout, pull the intended patch and run `uv sync`,
+then `uv run alpaca sync`. Sync uses that checkout's board libraries.
+It does not download a patch itself. Back up board files before either sync
+workflow; use UF2 flashing for changes to MicroPython or frozen startup files.
+
+### Does syncing an up-to-date UF2 make it slower?
+
+It can increase startup/import time and RAM use without adding a fix. The
+frozen libraries are **MicroPython bytecode**, not Cython modules. The current
+sync command uploads `.py` files without asking Belay to precompile them.
+When those files shadow frozen imports, MicroPython must parse and compile
+them on the Pico and keep the resulting bytecode in RAM. Frozen bytecode
+avoids that compilation and runs directly from flash. See MicroPython's
+[frozen-bytecode explanation](https://docs.micropython.org/en/v1.28.0/develop/optimizations.html#frozen-bytecode).
+
+This does not imply a fixed slowdown in every measurement loop: both forms
+execute MicroPython bytecode, and steady-state timing depends on the workload.
+Extra RAM use can also increase garbage-collection pressure. The size of the
+effect needs a hardware benchmark. **Keep the frozen libraries for
+normal student use; do not sync an already up-to-date board just in case.**
+Repeated syncs skip unchanged file contents, but leave the overrides in place.
+
+### Can sync delete my saved programs?
+
+Yes. The current CLI uses Belay's directory sync with its default cleanup:
+filesystem files absent from the staged library set are deleted, except for
+`boot.py`, `webrepl_cfg.py`, and `lib`. This can remove saved student scripts
+and data. Files with matching library names can be overwritten. Frozen
+firmware modules are unaffected. Keep a laptop copy of anything you need
+before running sync.
+
+### How do I return to the frozen libraries after syncing?
+
+Back up your board files, remove the ALPACA filesystem copies created by sync,
+and reset the Pico. Imports can then use the frozen versions again. Reflashing
+a UF2 alone is not a guaranteed filesystem cleanup: surviving overrides can
+still hide the new firmware's libraries.
+
+For a completely clean course setup, follow the instructor's filesystem-cleanup
+procedure or a [factory reset](https://docs.micropython.org/en/v1.28.0/rp2/tutorial/reset.html),
+then flash the correct ALPACA UF2. A factory reset erases saved programs and
+data as well as the overrides. Do not run sync again unless you need another
+development patch.
 
 ## Building
 
