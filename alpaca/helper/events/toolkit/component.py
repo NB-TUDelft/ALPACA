@@ -64,7 +64,7 @@ def fmt_f(c):
     return f"{(c * 1e12):.0f}pF"
 
 FLANKING_R = const(330) # Ohms
-_CAP_R = const(2000e3)
+_CAP_R = const(69.9e3)
 
 def is_resistor():
   set_direction("forward")
