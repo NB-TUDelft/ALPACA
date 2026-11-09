@@ -163,6 +163,12 @@ The BOOTSEL procedure is also described in the
 > nuked.**
 
 Use this to test changed board libraries without rebuilding the firmware.
+Release installations (PyPI, conda, wheels, and source archives) block `alpaca sync`
+before accessing any board. To enable it, explicitly install from a local source
+directory (`python -m pip install .` or `python -m pip install -e .`) or Git
+(`python -m pip install "git+https://github.com/NB-TUDelft/ALPACA.git"`).
+Running `uv sync` in this checkout also installs the project in editable mode.
+Changing into a repository directory alone does not unlock a release installation.
 Close any notebook or serial connection using the boards first.
 **Back up files saved on the Picos: sync can delete files outside the library
 set.** See the [FAQ](#faq) before using this on a student board.
@@ -178,7 +184,7 @@ alpaca sync
 This selects connected Picos, copies the `common` + `student`/`helper` code
 onto each selected board's filesystem, and soft-resets them. It uses the
 libraries in your checkout, or those bundled in the installed `alpaca2`
-package. To drop into a REPL on one board right after syncing:
+package installed from source or Git. To drop into a REPL on one board right after syncing:
 
 ```bash
 # uv
@@ -232,34 +238,11 @@ Use a new UF2 for startup changes. See MicroPython's
 
 ### What should students do when we publish a patch?
 
-For a **board-code patch**, use the course-specified ALPACA UF2 release
-containing the fix and flash the affected board(s) using BOOTSEL. Follow the
-release instructions about which boards need updating. For a **desktop-only
-patch** to the CLI or host library, update `alpaca2` in your Python environment;
-the Picos do not need reflashing.
+Reflash the affected boards with the course-specified ALPACA UF2 release
+using BOOTSEL. Follow the release instructions for which boards to update.
 
-A Git commit alone does not update installed packages or boards. Maintainers
-must publish a package or build a UF2 containing the patch before students can
-get it through that route. If an instructor asks students to apply a library
-patch through sync, first install the package containing it:
-
-```bash
-# Conda: the course YAML installs alpaca2 through pip
-conda activate ei-env
-python -m pip install --upgrade alpaca2
-alpaca sync
-```
-
-```bash
-# uv: published package in a working folder, outside this repository
-uv pip install --upgrade alpaca2
-uv run alpaca sync
-```
-
-When developing from a checkout, pull the intended patch and run `uv sync`,
-then `uv run alpaca sync`. Sync uses that checkout's board libraries.
-It does not download a patch itself. Back up board files before either sync
-workflow; use UF2 flashing for changes to MicroPython or frozen startup files.
+`alpaca sync` is an internal development tool. Students should not use it
+to apply patches.
 
 ### Does syncing an up-to-date UF2 make it slower?
 

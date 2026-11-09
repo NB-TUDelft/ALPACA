@@ -4,6 +4,7 @@ import typer
 
 from alpaca.cli.tools.cache import collect_files, get_cache_folder, PROJECT_ROOT
 from alpaca.cli.tools.pico import get_pico
+from alpaca.cli.tools.install_origin import sync_allowed
 from rich.progress import Progress
 from alpaca.cli.connect import connect as connect_cmd
 import os
@@ -15,6 +16,15 @@ import importlib.metadata
 def sync(
   connect: Annotated[str, typer.Option(help="Connect to an pico after syncing")] = ""
 ):  
+  if not sync_allowed():
+    typer.echo(
+      "Sync is disabled in release installations. Use BOOTSEL to flash the "
+      "course ALPACA UF2. Developers must install ALPACA from a local source "
+      "directory or Git to use sync.",
+      err=True,
+    )
+    raise typer.Exit(code=1)
+
   choices = []
 
   for pico_name in ["student", "helper"]:
