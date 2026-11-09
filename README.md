@@ -151,6 +151,17 @@ The BOOTSEL procedure is also described in the
 
 ### Sync board libraries (development or an instructor-directed patch)
 
+> [!CAUTION]
+> **`alpaca sync` is a development-only tool, not part of normal student
+> setup.** If you cloned this repo and are wondering whether to run it, you
+> almost certainly should not. Students get everything from the BOOTSEL
+> firmware flash (see above) — the `.uf2` already contains the ALPACA
+> libraries. Only run `sync` if you are developing the board libraries or an
+> instructor told you to apply a patch this way. Syncing a normally-flashed
+> board overrides its frozen modules with filesystem copies, which can
+> **soft-lock the board on that synced version until it is re-synced or
+> nuked.**
+
 Use this to test changed board libraries without rebuilding the firmware.
 Close any notebook or serial connection using the boards first.
 **Back up files saved on the Picos: sync can delete files outside the library
